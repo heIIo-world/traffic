@@ -3,29 +3,37 @@
 <head>
   <meta charset="UTF-8">
   <meta http-equiv="refresh" content="300">
+  <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;600&display=swap" rel="stylesheet">
   <style>
     *{margin:0;padding:0;box-sizing:border-box}
-    body{font-family:system-ui,sans-serif;background:#1a1a2e;color:#fff;padding:15px}
-    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px}
-    .card{background:rgba(255,255,255,0.05);border-radius:12px;padding:15px}
-    .card-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
-    .route-name{font-weight:600;font-size:1.1em}
-    .status{padding:4px 10px;border-radius:12px;font-size:.75em;font-weight:600;text-transform:uppercase}
-    .status-clear{background:#22c55e;color:#000}
-    .status-minor{background:#facc15;color:#000}
-    .status-moderate{background:#f97316;color:#000}
-    .status-major{background:#ef4444;color:#fff}
-    .incident{padding:8px 0;border-top:1px solid rgba(255,255,255,0.1);font-size:.85em}
-    .incident:first-child{border-top:none}
-    .incident-type{color:#f97316;font-weight:500;font-size:.8em}
-    .incident-desc{color:rgba(255,255,255,0.85);line-height:1.3;margin-top:3px}
-    .clear-msg{color:rgba(255,255,255,0.5);font-style:italic}
-    .footer{text-align:center;margin-top:15px;font-size:.75em;color:rgba(255,255,255,0.4)}
-    .loading{text-align:center;padding:40px;color:rgba(255,255,255,0.5)}
+    body{font-family:'Kanit',sans-serif;background:#eae7e2;color:#333;padding:10px;height:100vh;overflow:hidden}
+    .scroll-wrapper{height:100%;overflow:hidden}
+    .scroll-container{display:flex;flex-direction:column;gap:8px;animation:scroll 45s linear infinite}
+    .scroll-container:hover{animation-play-state:paused}
+    .route{padding:8px 0;border-bottom:1px solid #d5d2cd}
+    .route:last-child{border-bottom:none}
+    .route-header{display:flex;justify-content:space-between;align-items:center}
+    .route-name{font-weight:600;font-size:0.95em;color:#333}
+    .status{font-size:.75em;font-weight:600}
+    .status-clear{color:#5bb3b0}
+    .status-minor{color:#c9a227}
+    .status-moderate{color:#e07020}
+    .status-major{color:#cc3333}
+    .incidents{margin-top:4px}
+    .incident{font-size:.8em;color:#555;line-height:1.4;margin-top:3px}
+    .incident-type{color:#5bb3b0;margin-right:4px}
+    .clear-msg{font-size:.8em;color:#888;font-style:italic}
+    .loading{text-align:center;padding:20px;color:#888}
+    @keyframes scroll{
+      0%,10%{transform:translateY(0)}
+      90%,100%{transform:translateY(-50%)}
+    }
   </style>
 </head>
 <body>
-  <div id="content" class="loading">Loading traffic data...</div>
+  <div class="scroll-wrapper">
+    <div id="content" class="loading">Loading...</div>
+  </div>
   <script>
     const API_KEY = '2633af7e-c608-4926-89df-3980024cb838';
     const ROUTES = [
@@ -40,7 +48,7 @@
 
     async function load() {
       try {
-        const res = await fetch(`https://api.511.org/traffic/events?api_key=${API_KEY}&format=json`);
+        const res = await fetch(`https://corsproxy.io/?https://api.511.org/traffic/events?api_key=${API_KEY}&format=json`);
         const text = await res.text();
         const data = JSON.parse(text.charCodeAt(0) === 65279 ? text.slice(1) : text);
         render(data.events || []);
@@ -50,7 +58,7 @@
     }
 
     function render(events) {
-      let html = '<div class="grid">';
+      let cards = '';
       ROUTES.forEach(route => {
         const matches = events.filter(e => 
           route.keywords.some(k => (e.headline||'').toUpperCase().includes(k.toUpperCase()))
@@ -58,33 +66,33 @@
           ({'MAJOR':0,'MODERATE':1,'MINOR':2}[a.severity]||3) - ({'MAJOR':0,'MODERATE':1,'MINOR':2}[b.severity]||3)
         );
         
-        let status = 'clear', statusText = 'Clear';
+        let status = 'clear', statusText = 'No delays';
         if (matches.length) {
           const sev = matches[0].severity;
-          if (sev==='MAJOR') { status='major'; statusText='Major'; }
-          else if (sev==='MODERATE') { status='moderate'; statusText='Moderate'; }
-          else { status='minor'; statusText='Minor'; }
+          if (sev==='MAJOR') { status='major'; statusText='Major delays'; }
+          else if (sev==='MODERATE') { status='moderate'; statusText='Moderate delays'; }
+          else { status='minor'; statusText='Minor delays'; }
         }
         
-        html += `<div class="card"><div class="card-header">
+        cards += `<div class="route"><div class="route-header">
           <span class="route-name">${route.name}</span>
           <span class="status status-${status}">${statusText}</span>
         </div>`;
         
-        if (!matches.length) {
-          html += '<div class="clear-msg">No incidents</div>';
-        } else {
-          matches.slice(0,3).forEach(m => {
+        if (matches.length) {
+          cards += '<div class="incidents">';
+          matches.slice(0,2).forEach(m => {
             const type = {INCIDENT:'⚠️',CONSTRUCTION:'🚧',WEATHER_CONDITION:'🌧️'}[m.event_type]||'⚠️';
-            const desc = (m.headline||'').replace(/^CHP\s*:\s*/i,'').replace(/Expect delays\.?$/i,'');
-            html += `<div class="incident"><span class="incident-type">${type}</span><div class="incident-desc">${desc}</div></div>`;
+            const desc = (m.headline||'').replace(/^CHP\s*:\s*/i,'').replace(/Expect delays\.?$/i,'').substring(0,80);
+            cards += `<div class="incident"><span class="incident-type">${type}</span>${desc}</div>`;
           });
-          if (matches.length > 3) html += `<div class="incident" style="color:rgba(255,255,255,0.5)">+${matches.length-3} more</div>`;
+          if (matches.length > 2) cards += `<div class="incident" style="color:#999">+${matches.length-2} more</div>`;
+          cards += '</div>';
         }
-        html += '</div>';
+        cards += '</div>';
       });
-      html += `</div><div class="footer">Updated ${new Date().toLocaleTimeString()}</div>`;
-      document.getElementById('content').innerHTML = html;
+      
+      document.getElementById('content').innerHTML = `<div class="scroll-container">${cards}${cards}</div>`;
     }
 
     load();
