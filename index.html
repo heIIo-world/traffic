@@ -5,25 +5,22 @@
   <meta http-equiv="refresh" content="300">
   <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;600&display=swap" rel="stylesheet">
   <style>
-    *{margin:0;padding:0;box-sizing:border-box}
-    body{font-family:'Kanit',sans-serif;background:#eae7e2;color:#333;padding:10px;height:100vh;overflow:hidden}
+    *{margin:0;padding:0;box-sizing:border-box;text-align:left !important}
+    html,body{font-family:'Kanit',sans-serif !important;background:#eae7e2 !important;color:#333 !important;padding:10px;height:100vh;overflow:hidden;text-align:left !important}
     .scroll-wrapper{height:100%;overflow:hidden}
     .scroll-container{display:flex;flex-direction:column;gap:8px;animation:scroll 45s linear infinite}
-    .scroll-container:hover{animation-play-state:paused}
-    .route{padding:8px 0;border-bottom:1px solid #d5d2cd}
-    .route:last-child{border-bottom:none}
+    .route{padding:8px 0;border-bottom:1px solid #d5d2cd;background:#eae7e2 !important;text-align:left !important}
     .route-header{display:flex;justify-content:space-between;align-items:center}
-    .route-name{font-weight:600;font-size:0.95em;color:#333}
+    .route-name{font-weight:600;font-size:0.95em;color:#333 !important}
     .status{font-size:.75em;font-weight:600}
-    .status-clear{color:#5bb3b0}
-    .status-minor{color:#c9a227}
-    .status-moderate{color:#e07020}
-    .status-major{color:#cc3333}
-    .incidents{margin-top:4px}
-    .incident{font-size:.8em;color:#555;line-height:1.4;margin-top:3px}
-    .incident-type{color:#5bb3b0;margin-right:4px}
-    .clear-msg{font-size:.8em;color:#888;font-style:italic}
-    .loading{text-align:center;padding:20px;color:#888}
+    .status-clear{color:#5bb3b0 !important}
+    .status-minor{color:#c9a227 !important}
+    .status-moderate{color:#e07020 !important}
+    .status-major{color:#cc3333 !important}
+    .incidents{margin-top:4px;text-align:left !important}
+    .incident{font-size:.8em;color:#555 !important;line-height:1.4;margin-top:3px;text-align:left !important}
+    .incident-type{color:#5bb3b0 !important;margin-right:4px}
+    .loading{text-align:center;padding:20px;color:#888 !important;background:#eae7e2 !important}
     @keyframes scroll{
       0%,10%{transform:translateY(0)}
       90%,100%{transform:translateY(-50%)}
